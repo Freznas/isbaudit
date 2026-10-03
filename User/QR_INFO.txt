@@ -1,0 +1,6 @@
+QR image (direct): https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://isbaudit.vercel.app
+
+Use this URL to embed or download a PNG of the QR code that opens the game:
+https://isbaudit.vercel.app
+
+Local preview: open User/qr.html in a browser to view and download the QR code.

@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ISB Audit Admin</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        color: #333;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      header {
+        background: #1a1a1a;
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        border-radius: 8px;
+      }
+      h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        font-size: 14px;
+        color: #ccc;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .card h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #1a1a1a;
+      }
+      .form-group {
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: column;
+      }
+      label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+      input,
+      select,
+      button {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+      }
+      button {
+        cursor: pointer;
+        border: none;
+        background: #1f6feb;
+        color: white;
+      }
+      button:hover {
+        background: #0969da;
+      }
+      .btn-danger {
+        background: #dc3545;
+      }
+      .btn-danger:hover {
+        background: #c82333;
+      }
+      .status {
+        min-height: 20px;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        font-size: 14px;
+      }
+      .ok {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .err {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        font-size: 14px;
+      }
+      th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+      tr:hover {
+        background: #f9f9f9;
+      }
+      .assignment-event-row td {
+        background: #eef2f7;
+        font-weight: 700;
+        color: #1a1a1a;
+      }
+      .assignment-empty-row td {
+        color: #666;
+        font-style: italic;
+        background: #fafafa;
+      }
+      code {
+        background: #eef2f7;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .auth-section {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+      }
+      .hidden {
+        display: none;
+      }
+      #adminContent {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .main-column,
+      .characters-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .characters-scroll {
+        max-height: 70vh;
+        overflow-y: auto;
+        border: 1px solid #eee;
+        border-radius: 6px;
+      }
+      .characters-scroll table {
+        margin-top: 0;
+      }
+      .helper-note {
+        margin: -8px 0 16px;
+        font-size: 13px;
+        line-height: 1.4;
+        color: #555;
+      }
+      /* Simple popup styles */
+      .popup-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .popup-overlay.active { display: flex; }
+      .popup {
+        background: white;
+        padding: 18px 20px;
+        border-radius: 8px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        max-width: 360px;
+        text-align: center;
+      }
+      .popup h3 { margin-bottom: 8px; }
+      .popup button { margin-top: 12px; padding: 8px 12px; border-radius:6px; border:none; background:#1f6feb; color:#fff; cursor:pointer; }
+      @media (max-width: 980px) {
+        #adminContent {
+          grid-template-columns: 1fr;
+        }
+        .characters-scroll {
+          max-height: 360px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="popupOverlay" class="popup-overlay" role="dialog" aria-modal="true">
+      <div class="popup">
+        <h3 id="popupTitle">Notice</h3>
+        <div id="popupMessage">Message</div>
+        <div style="text-align:center;"><button type="button" id="popupClose">OK</button></div>
+      </div>
+    </div>
+    <div class="container">
+      <header>
+        <h1>ISB Audit Admin</h1>
+        <p class="subtitle">Manage events, characters and event assignments</p>
+      </header>
+
+      <div id="authSection" class="auth-section">
+        <h2 style="margin-bottom: 12px;">Authentication</h2>
+        <p style="margin-bottom: 16px; line-height: 1.5;">
+          Sign in with your Google account to access the admin panel.
+        </p>
+        <button type="button" onclick="handleLogin()" style="width: 100%;">Sign in with Google</button>
+        <p id="authNotice" style="margin-top: 12px; font-size: 13px; line-height: 1.5; color: #6b4e00;"></p>
+      </div>
+
+      <div id="adminContent" class="hidden">
+        <div class="main-column">
+          <button onclick="logout()" class="btn-danger">Logout (<span id="userEmail"></span>)</button>
+
+          <!-- Add Character Section -->
+          <div class="grid">
+            <div class="card">
+              <h2>Add Character</h2>
+              <p class="helper-note">Note that this only adds the character to the database and not a specific event.</p>
+              <p id="characterStatus" class="status"></p>
+              <form id="characterForm">
+                <div class="form-group">
+                  <label>Character Name</label>
+                  <input id="characterName" type="text" placeholder="Scout TK-421" required />
+                </div>
+                <div class="form-group">
+                  <label>Character Image (from computer)</label>
+                  <input id="characterImage" type="file" accept="image/*" required />
+                </div>
+                <button type="submit">Add Character</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <h2>Create Event</h2>
+              <p class="helper-note">Be specific with the event not to confuse previous events and/or similar events.</p>
+              <p id="eventStatus" class="status"></p>
+              <form id="eventForm">
+                <div class="form-group">
+                  <label>Event Name</label>
+                  <input id="eventName" type="text" placeholder="Tatooine Hunt" required />
+                </div>
+                <div class="form-group">
+                  <label>Event Date</label>
+                  <input id="eventDate" type="date" />
+                </div>
+                <button type="submit">Create Event</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Assign Trooper to Event Section -->
+          <div class="card">
+            <h2>Assign Character to Event</h2>
+            <p id="assignStatus" class="status"></p>
+            <form id="assignForm">
+              <div class="grid">
+                <div class="form-group">
+                  <label>Select Character</label>
+                  <select id="assignCharacter" required></select>
+                </div>
+                <div class="form-group">
+                  <label>Select Event</label>
+                  <select id="assignEvent" required></select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Character Response (for player input)</label>
+                <input id="characterNumber" type="number" placeholder="421" required />
+              </div>
+              <button type="submit">Assign</button>
+            </form>
+          </div>
+
+          <!-- All Events Section -->
+          <div class="card">
+            <h2>All Events</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Event Name</th>
+                  <th>Event Date</th>
+                  <th>Characters Assigned</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eventsTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Event Assignments Section -->
+          <div class="card">
+            <h2>Character-Event Assignments</h2>
+            <div class="form-group" style="max-width: 300px; margin-bottom: 12px;">
+              <label>Alphabetical sorting (Character)</label>
+              <select id="assignmentSort">
+                <option value="az">A-Z</option>
+                <option value="za">Z-A</option>
+              </select>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Character</th>
+                  <th>Event</th>
+                  <th>Response</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="assignmentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="characters-column">
+          <!-- All Characters Section -->
+          <div class="card">
+            <h2>All Characters in Database</h2>
+            <div class="characters-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Image</th>
+                  </tr>
+                </thead>
+                <tbody id="charactersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+      } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+      // Try to load Firebase config
+      let firebaseConfig = null;
+      let firebaseAvailable = false;
+      let authCheckInProgress = false;
+      const googleProvider = new GoogleAuthProvider();
+
+      async function loadFirebaseConfig() {
+        try {
+          const res = await fetch('/firebase-config.json');
+          if (res.ok) {
+            firebaseConfig = await res.json();
+            initializeFirebase();
+          } else {
+            console.log('Firebase config not found');
+            showAuthUnavailable('Firebase config saknas. Google-inloggning kan inte starta.');
+          }
+        } catch (error) {
+          console.log('Firebase not available');
+          showAuthUnavailable('Kunde inte ladda Firebase-konfiguration.');
+        }
+      }
+
+      function initializeFirebase() {
+        try {
+          initializeApp(firebaseConfig);
+          firebaseAvailable = true;
+          setupFirebaseAuth();
+        } catch (error) {
+          console.error('Firebase initialization failed:', error);
+          showAuthUnavailable('Firebase init misslyckades. Kontrollera firebase-config.json.');
+        }
+      }
+
+      function setupFirebaseAuth() {
+        const auth = getAuth();
+
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            showAuthForm();
+            return;
+          }
+
+          if (authCheckInProgress) {
+            return;
+          }
+
+          authCheckInProgress = true;
+          try {
+            const token = await user.getIdToken(true);
+            const res = await fetch('/api/admin/verify', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (!res.ok) {
+              const status = res.status;
+              const data = await res.json().catch(() => ({}));
+              const authNotice = document.getElementById('authNotice');
+              if (status === 403) {
+                showPopup('invalid email', 'Your email is not allowed to access this admin panel.');
+              }
+              if (authNotice) {
+                authNotice.textContent = data.error || 'Your account is not allowed to access this admin panel.';
+              }
+              await signOut(auth);
+              showAuthForm();
+              return;
+            }
+
+            showUserInfo(user);
+            setupAdminForm(user);
+          } catch (error) {
+            const authNotice = document.getElementById('authNotice');
+            if (authNotice) {
+              authNotice.textContent = 'Authentication check failed: ' + error.message;
+            }
+            await signOut(auth).catch(() => {});
+            showAuthForm();
+          } finally {
+            authCheckInProgress = false;
+          }
+        });
+      }
+
+      function showAuthUnavailable(message) {
+        const authNotice = document.getElementById('authNotice');
+        if (authNotice) {
+          authNotice.textContent = message;
+        }
+      }
+
+      window.logout = function () {
+        const auth = getAuth();
+        signOut(auth).finally(() => location.reload());
+      };
+
+      window.toggleSignup = function () {
+        return;
+      };
+
+      function showAuthForm() {
+        const authSection = document.getElementById('authSection');
+        const adminContent = document.getElementById('adminContent');
+
+        authSection.classList.remove('hidden');
+        adminContent.classList.add('hidden');
+        const authNotice = document.getElementById('authNotice');
+        if (authNotice) {
+          authNotice.textContent = '';
+        }
+      }
+
+      function showUserInfo(user) {
+        const authSection = document.getElementById('authSection');
+        const adminContent = document.getElementById('adminContent');
+
+        authSection.classList.add('hidden');
+        adminContent.classList.remove('hidden');
+
+        document.getElementById('userEmail').textContent = user.email || 'Admin';
+      }
+
+      window.handleLogin = async function () {
+        try {
+          const auth = getAuth();
+          await signInWithPopup(auth, googleProvider);
+        } catch (error) {
+          const authNotice = document.getElementById('authNotice');
+          if (authNotice && error?.code === 'auth/operation-not-allowed') {
+            authNotice.textContent = 'Google sign-in is disabled in Firebase. Enable Google under Authentication > Sign-in method, then try again.';
+            return;
+          }
+
+          if (authNotice) {
+            authNotice.textContent = 'Google sign-in failed: ' + error.message;
+          } else {
+            alert('Google sign-in failed: ' + error.message);
+          }
+        }
+      };
+
+      // Popup helpers
+      function showPopup(title, message) {
+        const overlay = document.getElementById('popupOverlay');
+        const titleEl = document.getElementById('popupTitle');
+        const msgEl = document.getElementById('popupMessage');
+        if (titleEl) titleEl.textContent = title || 'Notice';
+        if (msgEl) msgEl.textContent = message || '';
+        if (overlay) overlay.classList.add('active');
+      }
+
+      function hidePopup() {
+        const overlay = document.getElementById('popupOverlay');
+        if (overlay) overlay.classList.remove('active');
+      }
+
+      document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'popupClose') hidePopup();
+      });
+
+      window.handleSignup = async function () {
+        return window.handleLogin();
+      };
+
+      function setupAdminForm(user) {
+        const characterForm = document.getElementById('characterForm');
+        const eventForm = document.getElementById('eventForm');
+        const assignForm = document.getElementById('assignForm');
+        const assignmentSort = document.getElementById('assignmentSort');
+
+        async function getAuthHeader() {
+          const token = await user.getIdToken();
+          return { Authorization: `Bearer ${token}` };
+        }
+
+        function adjustEventCountInTable(eventId, delta) {
+          const normalizedEventId = String(eventId || '').trim();
+          if (!normalizedEventId || !Number.isFinite(Number(delta))) {
+            return;
+          }
+
+          const row = document.querySelector(`#eventsTableBody tr[data-event-id="${normalizedEventId}"]`);
+          if (!row) {
+            return;
+          }
+
+          const countCell = row.querySelector('td[data-role="character-count"]');
+          if (!countCell) {
+            return;
+          }
+
+          const currentCount = Number.parseInt(String(countCell.textContent || '0'), 10) || 0;
+          const nextCount = Math.max(0, currentCount + Number(delta));
+          countCell.textContent = String(nextCount);
+        }
+
+        // Character Form
+        characterForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const statusEl = document.getElementById('characterStatus');
+          statusEl.textContent = 'Saving...';
+          statusEl.className = 'status';
+
+          const name = document.getElementById('characterName').value;
+          const imageFile = document.getElementById('characterImage').files[0];
+
+          if (!imageFile) {
+            statusEl.textContent = 'Please select an image';
+            statusEl.className = 'status err';
+            return;
+          }
+
+          // Convert image to base64
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const base64Image = reader.result;
+
+            try {
+              const headers = await getAuthHeader();
+              const res = await fetch('/api/admin/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...headers,
+                },
+                body: JSON.stringify({
+                  name,
+                  image: base64Image,
+                }),
+              });
+
+              const data = await res.json();
+              if (!res.ok) {
+                statusEl.textContent = data.error || 'Failed to create character';
+                statusEl.className = 'status err';
+                return;
+              }
+
+              statusEl.textContent = 'Character created: ' + data.name;
+              statusEl.className = 'status ok';
+              characterForm.reset();
+              await loadCharacters();
+              await loadAssignCharacterSelect();
+            } catch (error) {
+              statusEl.textContent = 'Error: ' + error.message;
+              statusEl.className = 'status err';
+            }
+          };
+          reader.readAsDataURL(imageFile);
+        });
+
+        // Event Form
+        eventForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const statusEl = document.getElementById('eventStatus');
+          statusEl.textContent = 'Saving...';
+          statusEl.className = 'status';
+
+          const name = document.getElementById('eventName').value;
+          const eventDate = document.getElementById('eventDate')?.value || '';
+
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/events', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...headers,
+              },
+              body: JSON.stringify({ name, eventDate }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+              statusEl.textContent = data.error || 'Failed to create event';
+              statusEl.className = 'status err';
+              return;
+            }
+
+            statusEl.textContent = 'Event created: ' + data.name;
+            statusEl.className = 'status ok';
+            eventForm.reset();
+            await loadEvents();
+            await loadAssignEventSelect();
+          } catch (error) {
+            statusEl.textContent = 'Error: ' + error.message;
+            statusEl.className = 'status err';
+          }
+        });
+
+        // Assign Form
+        assignForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const statusEl = document.getElementById('assignStatus');
+          statusEl.textContent = 'Saving...';
+          statusEl.className = 'status';
+
+          const characterId = document.getElementById('assignCharacter').value;
+          const eventId = document.getElementById('assignEvent').value;
+          const characterNumber = document.getElementById('characterNumber').value;
+
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/assignments', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...headers,
+              },
+              body: JSON.stringify({
+                characterId,
+                eventId,
+                characterNumber,
+              }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+              statusEl.textContent = data.error || 'Failed to assign character';
+              statusEl.className = 'status err';
+              return;
+            }
+
+            statusEl.textContent = 'Character assigned to event';
+            statusEl.className = 'status ok';
+            adjustEventCountInTable(eventId, 1);
+            assignForm.reset();
+            await loadAssignments();
+          } catch (error) {
+            statusEl.textContent = 'Error: ' + error.message;
+            statusEl.className = 'status err';
+          }
+        });
+
+        // Load functions
+        async function loadCharacters() {
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/characters', { headers });
+            if (!res.ok) return;
+            const characters = await res.json();
+            const sortedCharacters = [...(characters || [])].sort((a, b) =>
+              String(a?.name || '').localeCompare(String(b?.name || ''), undefined, {
+                sensitivity: 'base',
+              })
+            );
+
+            const tbody = document.getElementById('charactersBody');
+            tbody.innerHTML = '';
+            sortedCharacters.forEach((char) => {
+              const imageSrc = char.imageUrl || char.image || '';
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${char.name || ''}</td>
+                <td>${imageSrc ? '<img src="' + imageSrc + '" style="max-width: 50px; max-height: 50px;" />' : 'N/A'}</td>
+              `;
+              tbody.appendChild(row);
+            });
+          } catch (error) {
+            console.error('Failed to load characters:', error);
+          }
+        }
+
+        async function loadEvents() {
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/events', { headers });
+            if (!res.ok) return;
+            const events = await res.json();
+
+            const tbody = document.getElementById('eventsTableBody');
+            tbody.innerHTML = '';
+            events.forEach((event) => {
+              const row = document.createElement('tr');
+              row.setAttribute('data-event-id', String(event.id || ''));
+              row.innerHTML = `
+                <td>${event.name || ''}</td>
+                <td data-role="character-count">${event.characterCount || 0}</td>
+                <td><button type="button" onclick="removeEvent('${event.id}')" style="padding:6px 8px; background:#dc3545; color:#fff; border-radius:6px; border:none; cursor:pointer;">Remove Event</button></td>
+              `;
+              tbody.appendChild(row);
+            });
+          } catch (error) {
+            console.error('Failed to load events:', error);
+          }
+        }
+
+        async function loadAssignments() {
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/assignments', { headers });
+            if (!res.ok) return;
+            const assignments = await res.json();
+            const sortMode = assignmentSort?.value === 'za' ? 'za' : 'az';
+            const assignmentsByEvent = new Map();
+
+            (assignments || []).forEach((assignment) => {
+              const eventName = String(assignment?.eventName || 'Unknown Event');
+              if (!assignmentsByEvent.has(eventName)) {
+                assignmentsByEvent.set(eventName, []);
+              }
+              assignmentsByEvent.get(eventName).push(assignment);
+            });
+
+            const orderedEvents = [...assignmentsByEvent.entries()].sort((a, b) =>
+              String(a[0] || '').localeCompare(String(b[0] || ''), undefined, {
+                sensitivity: 'base',
+              })
+            );
+
+            const tbody = document.getElementById('assignmentsBody');
+            tbody.innerHTML = '';
+
+            if (orderedEvents.length === 0) {
+              const row = document.createElement('tr');
+              row.className = 'assignment-empty-row';
+              row.innerHTML = '<td colspan="4">No assignments yet.</td>';
+              tbody.appendChild(row);
+              return;
+            }
+
+            orderedEvents.forEach(([eventName, eventAssignments]) => {
+              const sectionRow = document.createElement('tr');
+              sectionRow.className = 'assignment-event-row';
+              sectionRow.innerHTML = `<td colspan="4">Event: ${eventName}</td>`;
+              tbody.appendChild(sectionRow);
+
+              const sortedEventAssignments = [...eventAssignments].sort((a, b) => {
+                const compareResult = String(a?.characterName || '').localeCompare(
+                  String(b?.characterName || ''),
+                  undefined,
+                  { sensitivity: 'base' }
+                );
+                return sortMode === 'za' ? -compareResult : compareResult;
+              });
+
+              sortedEventAssignments.forEach((assign) => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-assignment-id', String(assign.id || ''));
+                row.setAttribute('data-event-id', String(assign.eventId || ''));
+                row.innerHTML = `
+                  <td>${assign.characterName || ''}</td>
+                  <td>${assign.eventName || ''}</td>
+                  <td>${assign.characterNumber || ''}</td>
+                  <td><button type="button" onclick="removeAssignment('${assign.id}')" style="padding:6px 8px; background:#dc3545; color:#fff; border-radius:6px; border:none; cursor:pointer;">Remove</button></td>
+                `;
+                tbody.appendChild(row);
+              });
+            });
+          } catch (error) {
+            console.error('Failed to load assignments:', error);
+          }
+        }
+
+        async function loadAssignCharacterSelect() {
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/characters', { headers });
+            if (!res.ok) return;
+            const characters = await res.json();
+            const sortedCharacters = [...(characters || [])].sort((a, b) =>
+              String(a?.name || '').localeCompare(String(b?.name || ''), undefined, {
+                sensitivity: 'base',
+              })
+            );
+
+            const select = document.getElementById('assignCharacter');
+            select.innerHTML = '<option value="">-- Select Character --</option>';
+            sortedCharacters.forEach((char) => {
+              const option = document.createElement('option');
+              option.value = char.id;
+              option.textContent = char.name;
+              select.appendChild(option);
+            });
+          } catch (error) {
+            console.error('Failed to load character select:', error);
+          }
+        }
+
+        async function loadAssignEventSelect() {
+          try {
+            const headers = await getAuthHeader();
+            const res = await fetch('/api/admin/events', { headers });
+            if (!res.ok) return;
+            const events = await res.json();
+
+            const select = document.getElementById('assignEvent');
+            select.innerHTML = '<option value="">-- Select Event --</option>';
+            events.forEach((event) => {
+              const option = document.createElement('option');
+              option.value = event.id;
+              option.textContent = event.name;
+              select.appendChild(option);
+            });
+          } catch (error) {
+            console.error('Failed to load event select:', error);
+          }
+        }
+
+        // Expose removeAssignment to global scope for inline buttons
+        window.removeAssignment = async function (assignmentId) {
+          if (!assignmentId) return;
+          const statusEl = document.getElementById('assignStatus');
+          // Try to find the event id from the DOM row so we can optimistic update counts
+          const assignmentRow = document.querySelector(`#assignmentsBody tr[data-assignment-id="${assignmentId}"]`);
+          const relatedEventId = assignmentRow ? assignmentRow.getAttribute('data-event-id') : null;
+          try {
+            statusEl.textContent = 'Removing...';
+            statusEl.className = 'status';
+            const headers = await getAuthHeader();
+            const res = await fetch(`/api/admin/assignments/${assignmentId}`, {
+              method: 'DELETE',
+              headers,
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              statusEl.textContent = data.error || 'Failed to remove assignment';
+              statusEl.className = 'status err';
+              return;
+            }
+
+            statusEl.textContent = 'Assignment removed';
+            statusEl.className = 'status ok';
+            // Optimistically decrement count in UI if we found related event id
+            if (relatedEventId) {
+              adjustEventCountInTable(relatedEventId, -1);
+            }
+            await loadAssignments();
+            await loadAssignCharacterSelect();
+          } catch (error) {
+            statusEl.textContent = 'Error: ' + error.message;
+            statusEl.className = 'status err';
+          }
+        };
+
+        window.removeEvent = async function (eventId) {
+          if (!eventId) return;
+          const statusEl = document.getElementById('eventStatus');
+          if (!window.confirm('Are you sure you want to remove this event and all its assignments?')) {
+            return;
+          }
+
+          try {
+            statusEl.textContent = 'Removing...';
+            statusEl.className = 'status';
+            const headers = await getAuthHeader();
+            const res = await fetch(`/api/admin/events/${eventId}`, {
+              method: 'DELETE',
+              headers,
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+              statusEl.textContent = data.error || 'Failed to remove event';
+              statusEl.className = 'status err';
+              return;
+            }
+
+            statusEl.textContent = `Event removed${data.removedAssignments ? ' (removed ' + data.removedAssignments + ' assignments)' : ''}`;
+            statusEl.className = 'status ok';
+            await loadEvents();
+            await loadAssignments();
+            await loadAssignEventSelect();
+          } catch (error) {
+            statusEl.textContent = 'Error: ' + error.message;
+            statusEl.className = 'status err';
+          }
+        };
+
+        assignmentSort?.addEventListener('change', () => {
+          loadAssignments();
+        });
+
+        // Initial load
+        loadCharacters();
+        loadEvents();
+        loadAssignments();
+        loadAssignCharacterSelect();
+        loadAssignEventSelect();
+      }
+
+      // Start initialization
+      loadFirebaseConfig();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "name": "sgbountyhunt-user",
+  "version": "1.0.0",
+  "description": "Stormtrooper Bounty Hunt - User App",
+  "main": "expo/index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "expo export --platform web",
+    "preview": "serve dist"
+  },
+  "dependencies": {
+    "expo": "~54.0.37",
+    "expo-av": "~16.0.8",
+    "expo-font": "~14.0.12",
+    "expo-screen-orientation": "~9.0.9",
+    "expo-status-bar": "~3.0.9",
+    "firebase": "^12.10.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-web": "^0.21.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "babel-preset-expo": "~54.0.10",
+    "qrcode-terminal": "^0.12.0",
+    "serve": "^14.2.6"
+  },
+  "private": true
+}

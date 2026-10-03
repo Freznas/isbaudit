@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGBountyhunt Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: #1a1a1a;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        h1 { font-size: 32px; margin-bottom: 10px; }
+        .subtitle { font-size: 14px; color: #ccc; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        input, textarea, select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            background: #1f6feb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            background: #0969da;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .btn-delete {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .btn-delete:hover {
+            background: #c82333;
+        }
+        
+        .hidden { display: none; }
+        
+        .auth-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SGBountyhunt Admin</h1>
+            <p class="subtitle">Manage events, characters and event assignments</p>
+        </header>
+        
+        <div id="authSection" class="auth-section">
+            <form id="loginForm" style="display: grid; gap: 10px;">
+                <label>Email</label>
+                <input id="email" type="email" placeholder="admin@example.com" required>
+                <label>Password</label>
+                <input id="password" type="password" placeholder="••••••••" required>
+                <button type="button" onclick="login()">Login</button>
+                <p style="margin-top: 10px; font-size: 13px;">
+                    <button type="button" onclick="toggleSignup()" style="background: none; color: #0969da; padding: 0; border: none; cursor: pointer; text-decoration: underline;">Sign up instead</button>
+                </p>
+            </form>
+            
+            <form id="signupForm" class="hidden" style="display: grid; gap: 10px;">
+                <label>Email</label>
+                <input id="signupEmail" type="email" placeholder="admin@example.com" required>
+                <label>Password</label>
+                <input id="signupPassword" type="password" placeholder="••••••••" required>
+                <button type="button" onclick="signup()">Create Account</button>
+                <p style="margin-top: 10px; font-size: 13px;">
+                    <button type="button" onclick="toggleSignup()" style="background: none; color: #0969da; padding: 0; border: none; cursor: pointer; text-decoration: underline;">Back to login</button>
+                </p>
+            </form>
+        </div>
+        
+        <div id="adminContent" class="hidden">
+            <button onclick="logout()" class="btn-danger" style="margin-bottom: 20px;">Logout (<span id="userEmail"></span>)</button>
+            
+            <div class="grid">
+                <!-- Events Section -->
+                <div class="card">
+                    <h2>Create Event</h2>
+                    <div id="eventStatus"></div>
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label>Event Name</label>
+                            <input id="eventName" type="text" placeholder="Tatooine Hunt" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Details</label>
+                            <input id="eventDetails" type="text" placeholder="5 Troopers • Easy" required>
+                        </div>
+                        <button type="submit">Create Event</button>
+                    </form>
+                    
+                    <h3 style="margin-top: 25px; font-size: 16px; margin-bottom: 15px;">Events</h3>
+                    <table id="eventsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Details</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                
+                <!-- Troopers Section -->
+                <div class="card">
+                    <h2>Add Character</h2>
+                    <div id="characterStatus"></div>
+                    <form id="characterForm">
+                        <div class="form-group">
+                            <label>Character Name</label>
+                            <input id="characterName" type="text" placeholder="Scout TK" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Image File (from your computer)</label>
+                            <input id="characterImageFile" type="file" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label>Image URL (optional if file is selected)</label>
+                            <input id="characterImage" type="url" placeholder="https://...">
+                        </div>
+                        <button type="submit">Save Character</button>
+                    </form>
+
+                    <h3 style="margin-top: 25px; font-size: 16px; margin-bottom: 15px;">Assign Character To Event</h3>
+                    <div id="trooperStatus"></div>
+                    <form id="trooperForm">
+                        <div class="form-group">
+                            <label>Character</label>
+                            <select id="trooperCharacterId" required>
+                                <option value="">Select a character...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Event Number (unique per event)</label>
+                            <input id="trooperEventNumber" type="text" placeholder="101" inputmode="numeric" pattern="[0-9]*" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Event</label>
+                            <select id="trooperEventId" required>
+                                <option value="">Select an event...</option>
+                            </select>
+                        </div>
+                        <button type="submit">Assign To Event</button>
+                    </form>
+                    
+                    <h3 style="margin-top: 25px; font-size: 16px; margin-bottom: 15px;">Event Assignments</h3>
+                    <table id="troopersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Number</th>
+                                <th>Event</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut as firebaseSignOut,
+            onAuthStateChanged,
+        } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            deleteDoc,
+            doc,
+        } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+        
+        let auth;
+        let db;
+        
+        // Global state
+        let currentUser = null;
+        let events = [];
+        let characters = [];
+        let troopers = [];
+        
+        const firebaseReady = fetch('https://sgbountyhunt-backend-667084431113.europe-west1.run.app/firebase-config.json')
+            .then(response => {
+                if (!response.ok) throw new Error('Firebase config unavailable');
+                return response.json();
+            })
+            .then(firebaseConfig => {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user) {
+                        document.getElementById('authSection').classList.add('hidden');
+                        document.getElementById('adminContent').classList.remove('hidden');
+                        document.getElementById('userEmail').textContent = user.email;
+                        loadData();
+                    } else {
+                        document.getElementById('authSection').classList.remove('hidden');
+                        document.getElementById('adminContent').classList.add('hidden');
+                    }
+                });
+            });
+
+        firebaseReady.catch(error => {
+            console.error('Firebase initialization failed:', error);
+            alert('Firebase configuration could not be loaded.');
+        });
+        
+        // Login
+        window.login = async function() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await firebaseReady;
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert('Login failed: ' + error.message);
+            }
+        };
+        
+        // Signup
+        window.signup = async function() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            try {
+                await firebaseReady;
+                await createUserWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                alert('Signup failed: ' + error.message);
+            }
+        };
+        
+        // Logout
+        window.logout = async function() {
+            await firebaseReady;
+            await firebaseSignOut(auth);
+        };
+        
+        // Toggle forms
+        window.toggleSignup = function() {
+            document.getElementById('loginForm').classList.toggle('hidden');
+            document.getElementById('signupForm').classList.toggle('hidden');
+        };
+        
+        // Load data
+        async function loadData() {
+            await loadEvents();
+            await loadCharacters();
+            await loadTroopers();
+        }
+        
+        async function loadEvents() {
+            try {
+                const snapshot = await getDocs(collection(db, 'events'));
+                events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderEvents();
+                updateEventSelect();
+            } catch (error) {
+                showStatus('eventStatus', 'Error loading events: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadTroopers() {
+            try {
+                const snapshot = await getDocs(collection(db, 'troopers'));
+                troopers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTroopers();
+            } catch (error) {
+                showStatus('trooperStatus', 'Error loading troopers: ' + error.message, 'error');
+            }
+        }
+
+        async function loadCharacters() {
+            try {
+                const snapshot = await getDocs(collection(db, 'characters'));
+                characters = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateCharacterSelect();
+            } catch (error) {
+                showStatus('characterStatus', 'Error loading characters: ' + error.message, 'error');
+            }
+        }
+
+        function readFileAsDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(new Error('Could not read image file.'));
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Create event
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('eventName').value;
+            const details = document.getElementById('eventDetails').value;
+            
+            try {
+                await addDoc(collection(db, 'events'), { name, details });
+                showStatus('eventStatus', 'Event created!', 'success');
+                document.getElementById('eventForm').reset();
+                await loadEvents();
+            } catch (error) {
+                showStatus('eventStatus', 'Error: ' + error.message, 'error');
+            }
+        });
+        
+        // Create character
+        document.getElementById('characterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('characterName').value.trim();
+            const imageUrlInput = document.getElementById('characterImage').value.trim();
+            const imageFile = document.getElementById('characterImageFile').files?.[0] || null;
+
+            try {
+                let imageUrl = imageUrlInput;
+
+                if (imageFile) {
+                    showStatus('characterStatus', 'Reading image file...', 'info');
+                    imageUrl = await readFileAsDataUrl(imageFile);
+
+                    // Firestore documents have a size limit; keep this conservative.
+                    if (String(imageUrl).length > 800000) {
+                        throw new Error('Image is too large. Choose a smaller file.');
+                    }
+                }
+
+                if (!name) {
+                    throw new Error('Character name is required.');
+                }
+
+                if (!imageUrl) {
+                    throw new Error('Select an image file or enter an image URL.');
+                }
+
+                await addDoc(collection(db, 'characters'), { name, imageUrl });
+                showStatus('characterStatus', 'Character saved!', 'success');
+                document.getElementById('characterForm').reset();
+                await loadCharacters();
+            } catch (error) {
+                showStatus('characterStatus', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Assign character to event
+        document.getElementById('trooperForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const characterId = document.getElementById('trooperCharacterId').value;
+            const eventNumber = document.getElementById('trooperEventNumber').value.replace(/\D/g, '');
+            const eventId = document.getElementById('trooperEventId').value;
+            
+            try {
+                const selectedCharacter = characters.find((character) => character.id === characterId);
+                if (!selectedCharacter) {
+                    throw new Error('Select a character first.');
+                }
+
+                if (!eventNumber) {
+                    throw new Error('Event number is required.');
+                }
+
+                const numberAlreadyUsed = troopers.some((entry) =>
+                    String(entry.eventId) === String(eventId) && String(entry.eventNumber) === String(eventNumber)
+                );
+
+                if (numberAlreadyUsed) {
+                    throw new Error('That number is already used in this event. Choose another number.');
+                }
+
+                const characterAlreadyAssigned = troopers.some((entry) =>
+                    String(entry.eventId) === String(eventId) && String(entry.characterId || '') === String(characterId)
+                );
+
+                if (characterAlreadyAssigned) {
+                    throw new Error('That character is already assigned to this event.');
+                }
+
+                await addDoc(collection(db, 'troopers'), {
+                    characterId,
+                    eventId,
+                    eventNumber,
+                    name: selectedCharacter.name,
+                    imageUrl: selectedCharacter.imageUrl,
+                });
+
+                showStatus('trooperStatus', 'Character assigned to event!', 'success');
+                document.getElementById('trooperForm').reset();
+                await loadTroopers();
+            } catch (error) {
+                showStatus('trooperStatus', 'Error: ' + error.message, 'error');
+            }
+        });
+        
+        // Render events
+        function renderEvents() {
+            const tbody = document.querySelector('#eventsTable tbody');
+            tbody.innerHTML = '';
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${event.name}</td>
+                    <td>${event.details}</td>
+                    <td><button class="btn-delete" onclick="deleteEvent('${event.id}')">Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Render troopers
+        function renderTroopers() {
+            const tbody = document.querySelector('#troopersTable tbody');
+            tbody.innerHTML = '';
+            troopers.forEach(trooper => {
+                const eventName = events.find(e => e.id === trooper.eventId)?.name || 'Unknown';
+                const displayNumber = trooper.eventNumber || trooper.trooperId || '-';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${trooper.name}</td>
+                    <td>${displayNumber}</td>
+                    <td>${eventName}</td>
+                    <td><button class="btn-delete" onclick="deleteTrooper('${trooper.id}')">Delete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update event select
+        function updateEventSelect() {
+            const select = document.getElementById('trooperEventId');
+            select.innerHTML = '<option value="">Select an event...</option>';
+            events.forEach(event => {
+                const option = document.createElement('option');
+                option.value = event.id;
+                option.textContent = event.name;
+                select.appendChild(option);
+            });
+        }
+
+        function updateCharacterSelect() {
+            const select = document.getElementById('trooperCharacterId');
+            if (!select) {
+                return;
+            }
+
+            select.innerHTML = '<option value="">Select a character...</option>';
+            characters.forEach((character) => {
+                const option = document.createElement('option');
+                option.value = character.id;
+                option.textContent = character.name;
+                select.appendChild(option);
+            });
+        }
+        
+        // Delete functions
+        window.deleteEvent = async function(id) {
+            if (confirm('Delete this event?')) {
+                try {
+                    await deleteDoc(doc(db, 'events', id));
+                    await loadEvents();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        };
+        
+        window.deleteTrooper = async function(id) {
+            if (confirm('Delete this event assignment?')) {
+                try {
+                    await deleteDoc(doc(db, 'troopers', id));
+                    await loadTroopers();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        };
+        
+        // Show status message
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = 'status ' + type;
+            setTimeout(() => { el.textContent = ''; }, 4000);
+        }
+    </script>
+</body>
+</html>
