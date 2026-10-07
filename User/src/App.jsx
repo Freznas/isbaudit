@@ -66,6 +66,33 @@ function App() {
     );
   };
 
+  const getNearestEvent = (events) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const datedEvents = events
+      .map((event, index) => {
+        const eventDate = event.eventDate
+          ? new Date(`${event.eventDate}T00:00:00`)
+          : null;
+        return { event, index, eventDate };
+      })
+      .filter(({ eventDate }) => eventDate && !Number.isNaN(eventDate.getTime()));
+
+    const upcoming = datedEvents
+      .filter(({ eventDate }) => eventDate >= today)
+      .sort((a, b) => a.eventDate - b.eventDate || a.index - b.index);
+
+    if (upcoming.length > 0) {
+      return upcoming[0].event;
+    }
+
+    const past = datedEvents
+      .sort((a, b) => b.eventDate - a.eventDate || a.index - b.index);
+
+    return past[0]?.event || events[0] || null;
+  };
+
   const handleStart = async () => {
     try {
       const events = await getEvents();
@@ -80,7 +107,7 @@ function App() {
       }
 
       if (onlyActiveEvents.length > 0) {
-        setSelectedEvent(onlyActiveEvents[0].id);
+        setSelectedEvent(getNearestEvent(onlyActiveEvents)?.id || null);
         setCurrentScreen('game');
         return;
       }

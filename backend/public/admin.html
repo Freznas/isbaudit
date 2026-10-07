@@ -748,6 +748,7 @@
               row.setAttribute('data-event-id', String(event.id || ''));
               row.innerHTML = `
                 <td>${event.name || ''}</td>
+                <td>${event.eventDate || ''}</td>
                 <td data-role="character-count">${event.characterCount || 0}</td>
                 <td><button type="button" onclick="removeEvent('${event.id}')" style="padding:6px 8px; background:#dc3545; color:#fff; border-radius:6px; border:none; cursor:pointer;">Remove Event</button></td>
               `;
